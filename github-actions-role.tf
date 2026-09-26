@@ -27,8 +27,8 @@ resource "aws_iam_role" "week7_deploy" {
         }
         StringLike = {
           # Replace <ownerID> / <repoID> with real values — get them with:
-          # gh api repos/EbotProg/Learning-Devops-Week-7-CICD-Pipelines-with-github-actions --jq '.owner.id, .id'
-          "token.actions.githubusercontent.com:sub" = "repo:EbotProg@*/Learning-Devops-Week-7-CICD-Pipelines-with-github-actions@*:*"
+          # gh api repos/EbotProg/Learning-Devops-Week-3-Docker-Deep-Dive --jq '.owner.id, .id'
+          "token.actions.githubusercontent.com:sub" = "repo:EbotProg@*/Learning-Devops-Week-3-Docker-Deep-Dive@*:*"
         }
       }
     }]
@@ -45,7 +45,7 @@ resource "aws_iam_role_policy" "ecr_push" {
       { Effect = "Allow", Action = "ecr:GetAuthorizationToken", Resource = "*" },
       {
         Effect = "Allow"
-        Action = ["ecr:BatchCheckLayerAvailability", "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload", "ecr:PutImage"]
+        Action = ["ecr:BatchCheckLayerAvailability", "ecr:BatchGetImage", "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload", "ecr:PutImage"]
         Resource = [
           "arn:aws:ecr:eu-north-1:${data.aws_caller_identity.current.account_id}:repository/crud-nextjs-frontend",
           "arn:aws:ecr:eu-north-1:${data.aws_caller_identity.current.account_id}:repository/crud-parse-server-backend"
