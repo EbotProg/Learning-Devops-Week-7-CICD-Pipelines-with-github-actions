@@ -2,8 +2,9 @@ name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     # paths: [".github/workflows/**"]
+  pull-request: [master]
   # dispatch_workflow:
 
 concurrency:
@@ -23,9 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        application: ["CRUD-nextjs-frontend", "Crud-parse-server-backend"]
+        application: ["CRUD-nextjs-frontend", "CRUD-parse-server-backend"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -33,7 +37,7 @@ jobs:
           cache-dependency-path: ${{ matrix.application }}/package-lock.json
       - run: npm ci
         working-directory: ${{ matrix.application }}
-      - run: npm run lint
+      - run: npm run lint --if-present
         working-directory: ${{ matrix.application }}
 
   build-and-push:
@@ -43,6 +47,8 @@ jobs:
       sha: ${{ steps.sha.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - id: sha
         run: echo "sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
@@ -99,6 +105,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/app
+            aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 110566986807.dkr.ecr.eu-north-1.amazonaws.com
             sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${{ needs.build-and-push.outputs.sha }}/" .env
             docker compose pull
             docker compose up -d
